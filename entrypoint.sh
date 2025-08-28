@@ -1,16 +1,14 @@
 #!/bin/bash
 
-# Define the path for the persistent configuration directory.
-CONFIG_DIR="/opt/retropie/configs"
+# This script runs as root when the container starts.
 
-# Check if the 'all' subdirectory (a key part of the default config) is missing.
-# This indicates that this is the first time the container is running with an empty volume.
-if [ ! -d "${CONFIG_DIR}/all" ]; then
-  echo "First run detected: Populating default configurations..."
-  # Copy the default configs from the backup location into the empty volume.
-  cp -a /opt/retropie/configs.bak/. "${CONFIG_DIR}"
-fi
+# Set the ownership of all mounted directories to the 'pie' user.
+# This is the crucial step that fixes the permission errors, as the volumes
+# are initially mounted with root ownership.
+chown -R pie:pie /home/pie/.emulationstation \
+                 /opt/retropie/configs \
+                 /home/pie/RetroPie
 
-# Now that the configs are guaranteed to be in place, execute EmulationStation.
-# The 'exec' command replaces this script with the emulationstation process.
-exec /opt/retropie/supplementary/emulationstation/emulationstation
+# Now, drop privileges and execute the main command (EmulationStation) as the 'pie' user.
+# The 'exec' command replaces this script with the new process, ensuring it's the main container process.
+exec sudo -u pie /opt/retropie/supplementary/emulationstation/emulationstation
