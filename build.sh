@@ -1,36 +1,32 @@
 #!/bin/bash
 
-# A script to perform a full cleanup, prepare directories, and build the RetroPie image.
+# A final, clean script to prepare the host and build the RetroPie container image.
 
 CONTAINER_NAME="retropie"
 IMAGE_NAME="retropie"
+DATA_DIR="retropie-data"
 
 # --- Step 1: Full Cleanup ---
+# This is a necessary step from our troubleshooting to ensure a clean build.
 echo "Performing full cleanup..."
-
-# Check for and remove the existing container.
 if sudo podman ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
-    echo "   - Found existing container '$CONTAINER_NAME'. Removing it..."
     sudo podman stop "$CONTAINER_NAME" >/dev/null 2>&1
     sudo podman rm "$CONTAINER_NAME" >/dev/null 2>&1
 fi
-
-# Check for and remove the existing image.
 if sudo podman image exists "$IMAGE_NAME"; then
-    echo "   - Found existing image '$IMAGE_NAME'. Removing it..."
     sudo podman rmi "$IMAGE_NAME" >/dev/null 2>&1
 fi
 
-# --- Step 2: Prepare Directories ---
+# --- Step 2: Prepare Host Directories ---
+# This is a necessary one-time setup step.
 DIRS=(
-    "retropie-data/configs"
-    "retropie-data/configs-all"
-    "retropie-data/bios"
-    "retropie-data/roms"
-    "retropie-data/saves"
-    "retropie-data/states"
+    "$DATA_DIR/configs"
+    "$DATA_DIR/configs-all"
+    "$DATA_DIR/bios"
+    "$DATA_DIR/roms"
+    "$DATA_DIR/saves"
+    "$DATA_DIR/states"
 )
-
 for dir in "${DIRS[@]}"; do
     if [ ! -d "$dir" ]; then
         echo "Creating missing directory: $dir"
@@ -39,9 +35,8 @@ for dir in "${DIRS[@]}"; do
 done
 
 # --- Step 3: Build Image ---
-echo "Building container image '$IMAGE_NAME' from scratch..."
-# We use --no-cache to ensure a completely fresh build, avoiding old layers.
-sudo podman build --no-cache -t "$IMAGE_NAME" .
+echo "Building container image '$IMAGE_NAME'..."
+sudo podman build -t "$IMAGE_NAME" .
 
 # Check the exit code of the build command.
 if [ $? -eq 0 ]; then
