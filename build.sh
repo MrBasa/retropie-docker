@@ -1,15 +1,24 @@
 #!/bin/bash
 
-# A script to clean up, prepare directories, and build the RetroPie image from scratch.
+# A script to perform a full cleanup, prepare directories, and build the RetroPie image.
 
 CONTAINER_NAME="retropie"
+IMAGE_NAME="retropie"
 
-# --- Step 1: Cleanup ---
-# Check if a container with the name already exists and remove it.
+# --- Step 1: Full Cleanup ---
+echo "Performing full cleanup..."
+
+# Check for and remove the existing container.
 if sudo podman ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
-    echo "Found existing container '$CONTAINER_NAME'. Cleaning it up..."
+    echo "   - Found existing container '$CONTAINER_NAME'. Removing it..."
     sudo podman stop "$CONTAINER_NAME" >/dev/null 2>&1
-    sudo podman rm "$CONTAINER_NAME"
+    sudo podman rm "$CONTAINER_NAME" >/dev/null 2>&1
+fi
+
+# Check for and remove the existing image.
+if sudo podman image exists "$IMAGE_NAME"; then
+    echo "   - Found existing image '$IMAGE_NAME'. Removing it..."
+    sudo podman rmi "$IMAGE_NAME" >/dev/null 2>&1
 fi
 
 # --- Step 2: Prepare Directories ---
@@ -29,14 +38,14 @@ for dir in "${DIRS[@]}"; do
     fi
 done
 
-# --- Step 3: Build Image (with --no-cache) ---
-echo "Building container image '$CONTAINER_NAME' from scratch..."
-# The --no-cache flag forces a complete rebuild, ignoring old layers.
-sudo podman build --no-cache -t "$CONTAINER_NAME" .
+# --- Step 3: Build Image ---
+echo "Building container image '$IMAGE_NAME' from scratch..."
+# We use --no-cache to ensure a completely fresh build, avoiding old layers.
+sudo podman build --no-cache -t "$IMAGE_NAME" .
 
 # Check the exit code of the build command.
 if [ $? -eq 0 ]; then
-    echo "Build successful. Image '$CONTAINER_NAME' is ready."
+    echo "Build successful. Image '$IMAGE_NAME' is ready."
 else
     echo "Build failed."
 fi

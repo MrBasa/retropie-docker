@@ -2,6 +2,8 @@ version: '3.8'
 
 services:
   retropie:
+    # Explicitly name the image to match the build script.
+    image: retropie
     # Build the image from the Dockerfile in the current directory
     build: .
     container_name: retropie
@@ -9,7 +11,7 @@ services:
     # --- Performance & Priority ---
     # Give this container a higher proportion of CPU time (default is 1024)
     cpu_shares: 2048
-    # mem_limit: 4g # <-- This line is commented out to fix the error
+    # mem_limit: 4g
 
     # --- Hardware & Controller Support ---
     # Use host networking for simplified device discovery

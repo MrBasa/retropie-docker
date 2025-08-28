@@ -52,10 +52,11 @@ RUN git clone --depth=1 https://github.com/RetroPie/RetroPie-Setup.git
 # Set the working directory for the setup script
 WORKDIR /home/pie/RetroPie-Setup
 
-# Install RetroPie core packages and main emulators
+# Install RetroPie core, main packages, AND the EmulationStation frontend
 RUN sudo ./retropie_packages.sh setup core && \
-    sudo ./retropie_packages.sh setup main
+    sudo ./retropie_packages.sh setup main && \
+    sudo ./retropie_packages.sh emulationstation
 
 # Set the entrypoint to the absolute path of the EmulationStation binary
 WORKDIR /home/pie
-ENTRYPOINT [ "/opt/retropie/supplementary/emulationstation/emulationstation" ]
+ENTRYPOINT [ "emulationstation" ]
