@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  retropie:
+    # Build the image from the Dockerfile in the current directory
+    build: .
+    container_name: retropie
+    
+    # --- Performance & Priority ---
+    # Give this container a higher proportion of CPU time (default is 1024)
+    cpu_shares: 2048
+    # mem_limit: 4g # <-- This line is commented out to fix the error
+
+    # --- Hardware & Controller Support ---
+    # Use host networking for simplified device discovery
+    network_mode: "host"
+    
+    # Grant elevated privileges for low-level hardware access
+    privileged: true
+    
+    # Mount essential device directories from the host
+    volumes:
+      - /dev/input:/dev/input
+      - /dev/bus/usb:/dev/bus/usb
+      - /run/udev/data:/run/udev/data
+
+    # --- Data Persistence ---
+    # Note: For Podman on SELinux systems (like Fedora), the ":Z" flag is often required
+    # to relabel the volumes so the container can access them.
+    volumes:
+      # Main configuration folder for RetroPie and EmulationStation
+      - ./retropie-data/configs:/home/pie/.emulationstation:Z
+      - ./retropie-data/configs-all:/opt/retropie/configs:Z
+      
+      # ROMs location (assuming a simple local mapping for now)
+      - ./retropie-data/roms:/home/pie/RetroPie/roms:Z
+      
+      # BIOS files, Saved games, and Save States
+      - ./retropie-data/bios:/home/pie/RetroPie/BIOS:Z
+      - ./retropie-data/saves:/home/pie/RetroPie/saves:Z
+      - ./retropie-data/states:/home/pie/RetroPie/states:Z
+
+    # Ensure the container restarts automatically if it stops
+    restart: unless-stopped
