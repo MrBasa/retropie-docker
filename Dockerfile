@@ -46,13 +46,14 @@ RUN apt-get update && \
 #    usermod -a -G sudo,input,video,audio,dialout,plugdev,tty,bluetooth pie && \
 #    echo "pie ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/pie-nopasswd
 
-# Add a 'pie' user, grant sudo permissions for the build, and add to groups needed for hardware access.
-RUN groupadd -r video && \
-    groupadd -r input && \
-    groupadd -r render && \
+# Idempotently create hardware groups, then create the 'pie' user and add it to them.
+# This version checks if the group exists before trying to create it.
+RUN (getent group video || groupadd -r video) && \
+    (getent group input || groupadd -r input) && \
+    (getent group render || groupadd -r render) && \
     useradd --create-home --shell /bin/bash pie && \
     echo "pie ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    usermod -a -G video,input,render pie
+    usermod -a -G input,video,render pie
 
 # Switch to the 'pie' user for the main setup
 USER pie
@@ -63,10 +64,10 @@ RUN git clone --depth=1 https://github.com/RetroPie/RetroPie-Setup.git
 
 # Change to the RetroPie-Setup directory and run the setup script
 WORKDIR /home/pie/RetroPie-Setup
-RUN sudo ./retropie_setup.sh
-#RUN sudo ./retropie_packages.sh setup core && \
-#    sudo ./retropie_packages.sh setup main && \
-#    sudo ./retropie_packages.sh emulationstation
+# Manually install the core and main dependencies non-interactively
+RUN sudo ./retropie_packages.sh setup core && \
+    sudo ./retropie_packages.sh setup main && \
+    sudo ./retropie_packages.sh emulationstation
 
 # --- Final image setup ---
 # Switch back to root user to move configs and set up the entrypoint
