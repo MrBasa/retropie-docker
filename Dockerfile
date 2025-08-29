@@ -14,20 +14,30 @@ STOPSIGNAL SIGINT
 # Install all necessary dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+        build-essential \
         ca-certificates \
+        cmake \
+        dbus-daemon \
         dialog \
         git \
+        gnupg \
+        joystick \
+        libasound2-dev \
+        libbluetooth-dev \
+        libdbus-1-dev \
+        libevdev-dev \
+        libsdl2-dev \
+        libsdl2-image-dev \
+        libsdl2-mixer-dev \
+        libudev-dev \
         lsb-release \
+        pkg-config \
+        python3-dev \
+        python3-pip \
         sudo \
         tini \
-        wget \
-        dbus-daemon && \
+        wget && \
     rm -rf /var/lib/apt/lists/*
-    #gnupg sudo build-essential cmake git wget ca-certificates dialog \
-    #pkg-config libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev \
-    #libasound2-dev libudev-dev libevdev-dev libdbus-1-dev \
-    #libbluetooth-dev joystick python3-dev python3-pip \
-    #&& rm -rf /var/lib/apt/lists/*
 
 # Create the 'pie' user and grant necessary permissions
 #RUN groupadd --system input && \
@@ -36,11 +46,13 @@ RUN apt-get update && \
 #    usermod -a -G sudo,input,video,audio,dialout,plugdev,tty,bluetooth pie && \
 #    echo "pie ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/pie-nopasswd
 
-# Add a 'pie' user, grant sudo permissions for the build,
-# and add to groups needed for hardware access.
-RUN useradd --create-home --shell /bin/bash pie && \
+# Add a 'pie' user, grant sudo permissions for the build, and add to groups needed for hardware access.
+RUN groupadd -r video && \
+    groupadd -r input && \
+    groupadd -r render && \
+    useradd --create-home --shell /bin/bash pie && \
     echo "pie ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    usermod -a -G input,video,render pie
+    usermod -a -G video,input,render pie
 
 # Switch to the 'pie' user for the main setup
 USER pie
