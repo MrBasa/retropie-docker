@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Entrypoint starting..."
+
 # Start a D-Bus session for controller support
 eval "$(dbus-launch --sh-syntax)"
 
