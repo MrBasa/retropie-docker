@@ -23,8 +23,6 @@ if [ ! -d "$DATA_DIR" ]; then
 fi
 
 # --- Step 3: Set Permissions ---
-# The 'pie' user inside the container needs to own the data volume.
-# This command sets the ownership of the host directory to match.
 echo "Setting permissions for '$DATA_DIR'..."
 sudo chown -R 1000:1000 "$DATA_DIR"
 

@@ -1,8 +1,7 @@
+# v0.0.3
+
 # Use a slim, modern Debian base image for performance
 FROM debian:bookworm-slim
-
-# --- Add an argument for the Render GID ---
-ARG RENDER_GID
 
 # Set environment variables to non-interactive to prevent prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
@@ -16,12 +15,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Create the 'pie' user and grant necessary permissions
-# --- FIX IS HERE: Create a 'render' group with the correct GID ---
 RUN groupadd --system input && \
     groupadd --system bluetooth && \
-    groupadd -g ${RENDER_GID} render && \
     useradd -m -s /bin/bash pie && \
-    usermod -a -G sudo,input,video,audio,dialout,plugdev,tty,bluetooth,render pie && \
+    usermod -a -G sudo,input,video,audio,dialout,plugdev,tty,bluetooth pie && \
     echo "pie ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/pie-nopasswd
 
 # Switch to the 'pie' user for the main setup
@@ -35,24 +32,22 @@ RUN sudo ./retropie_packages.sh setup core && \
     sudo ./retropie_packages.sh setup main && \
     sudo ./retropie_packages.sh emulationstation
 
-# Switch back to root to rearrange files for a clean volume mount strategy
+# Switch back to root to rearrange files and prepare the entrypoint
 USER root
 
-# Create a single, top-level directory that will be our only mount point for persistent data.
+# Create a single data directory and use symlinks for a clean volume mount strategy
 RUN mkdir /data
-
-# Move the data generated during the build into subdirectories inside /data.
 RUN mv /home/pie/.emulationstation /data/configs && \
     mv /opt/retropie/configs /data/configs-all && \
     mv /home/pie/RetroPie /data/RetroPie
-
-# Remove the original directories and replace them with symbolic links.
 RUN rm -rf /home/pie/.emulationstation /opt/retropie/configs /home/pie/RetroPie && \
     ln -s /data/configs /home/pie/.emulationstation && \
     ln -s /data/configs-all /opt/retropie/configs && \
     ln -s /data/RetroPie /home/pie/RetroPie
 
-# Set the final user and entrypoint
-USER pie
-WORKDIR /home/pie
-ENTRYPOINT [ "/opt/retropie/supplementary/emulationstation/emulationstation" ]
+# Copy the new entrypoint script into the container and make it executable.
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Set the entrypoint to our new script.
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
