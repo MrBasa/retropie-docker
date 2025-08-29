@@ -3,6 +3,9 @@
 # Use a slim, modern Debian base image for performance
 FROM debian:bookworm-slim
 
+# Set the TERM environment variable to prevent tput errors
+ENV TERM=xterm
+
 # Set environment variables to non-interactive to prevent prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
 
