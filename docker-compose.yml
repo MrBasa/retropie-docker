@@ -7,26 +7,23 @@ services:
     container_name: retropie
     
     cpu_shares: 2048
-
     network_mode: "host"
     privileged: true
     
     environment:
       - DISPLAY=${DISPLAY}
+      # Add XDG_RUNTIME_DIR
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
       
     volumes:
       # Display & Hardware Mounts
       - /tmp/.X11-unix:/tmp/.X11-unix:Z
       - /dev/input:/dev/input
-      - /dev/bus/usb:/dev/bus/usb
-      - /run/udev/data:/run/udev/data
+      # Mount GPU and X11 authentication cookie
+      - /dev/dri:/dev/dri:Z
+      - ${XAUTHORITY}:/home/pie/.Xauthority:Z
       
-      # Data Persistence Mounts
-      - ./retropie-data/configs:/home/pie/.emulationstation:Z
-      - ./retropie-data/configs-all:/opt/retropie/configs:Z
-      - ./retropie-data/roms:/home/pie/RetroPie/roms:Z
-      - ./retropie-data/bios:/home/pie/RetroPie/BIOS:Z
-      - ./retropie-data/saves:/home/pie/RetroPie/saves:Z
-      - ./retropie-data/states:/home/pie/RetroPie/states:Z
+      # Mount the single host data directory to the single container data directory.
+      - ./retropie-data:/data:Z
 
     restart: unless-stopped
