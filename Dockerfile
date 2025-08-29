@@ -1,5 +1,3 @@
-# v0.0.4
-
 # Use a slim, modern Debian base image for performance
 FROM debian:bookworm-slim
 
