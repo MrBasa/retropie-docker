@@ -18,17 +18,18 @@ services:
     # Binds the container's network directly to the host for NetPlay/streaming
     network_mode: "host"
 
+    # Needed?
     privileged: true
 
     # Provides direct access to hardware for display and controllers
     devices:
       - "/dev/dri:/dev/dri"
       - "/dev/input:/dev/input"
-    
+
     environment:
       - DISPLAY=${DISPLAY}
       - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
-      
+
     volumes:
       # Display & Hardware Mounts
       #- /tmp/.X11-unix:/tmp/.X11-unix:Z

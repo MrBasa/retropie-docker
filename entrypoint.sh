@@ -1,6 +1,4 @@
 #!/bin/bash
-# v0.0.4
-
 # This script runs as root to prepare the container environment at runtime.
 
 # Define paths for the persistent data directories.
