@@ -1,4 +1,4 @@
-# v0.0.3
+# v0.0.4
 version: '3.8'
 
 services:
@@ -22,7 +22,12 @@ services:
       - /dev/dri:/dev/dri:Z
       - ${XAUTHORITY}:/home/pie/.Xauthority:Z
       
-      # Mount the single host data directory to the single container data directory.
-      - ./retropie-data:/data:Z
+      # Data Persistence Mounts
+      - ./retropie-data/configs:/home/pie/.emulationstation:Z
+      - ./retropie-data/configs-all:/opt/retropie/configs:Z
+      - ./retropie-data/roms:/home/pie/RetroPie/roms:Z
+      - ./retropie-data/bios:/home/pie/RetroPie/BIOS:Z
+      - ./retropie-data/saves:/home/pie/RetroPie/saves:Z
+      - ./retropie-data/states:/home/pie/RetroPie/states:Z
 
     restart: unless-stopped
