@@ -25,7 +25,7 @@ services:
     network_mode: "host"
 
     # Needed?
-    privileged: true
+    #privileged: true
 
     # Provides direct access to hardware for display and controllers
     devices:
