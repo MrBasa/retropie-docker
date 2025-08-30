@@ -21,4 +21,5 @@ fi
 
 # --- Step 2: Build ---
 echo "Starting fresh build and deploying..."
+#podman build --security-opt seccomp=unconfined -t retropie .
 podman-compose --pod-args '--userns keep-id' up -d --build

@@ -19,8 +19,10 @@ RUN apt-get update && \
         build-essential \
         ca-certificates \
         cmake \
+        curl \
         dbus-daemon \
         dialog \
+        feh \
         git \
         gnupg \
         joystick \
@@ -33,12 +35,18 @@ RUN apt-get update && \
         libsdl2-mixer-dev \
         libudev-dev \
         lsb-release \
+        mc \
+        p7zip \
         pkg-config \
         python3-dev \
         python3-pip \
+        python3-pyudev \
         sudo \
+        subversion \
         tini \
-        wget && \
+        unzip \
+        wget \
+        xmlstarlet && \
     rm -rf /var/lib/apt/lists/*
 
 # Create the 'pie' user and grant necessary permissions
