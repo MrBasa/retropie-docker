@@ -69,6 +69,9 @@ RUN sudo ./retropie_packages.sh setup core && \
     sudo ./retropie_packages.sh setup main && \
     sudo ./retropie_packages.sh emulationstation
 
+# Create the RetroPie directory structure inside the image
+RUN mkdir -p /home/pie/RetroPie
+
 # --- Final image setup ---
 # Switch back to root user to move configs and set up the entrypoint
 USER root

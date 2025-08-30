@@ -15,18 +15,14 @@ fi
 # Check if ~/.emulationstation is empty and copy defaults if it is.
 if [ -z "$(ls -A /home/pie/.emulationstation)" ]; then
    echo "INFO: /home/pie/.emulationstation is empty. Bootstrapping default ES configs..."
-   # EmulationStation often pulls configs from the main configs dir,
-   # but we can pre-create key files or copy a template if needed.
-   # For now, ensuring the directory exists is the main goal.
-   # If specific files are needed, they would be copied here.
-   : # This is a placeholder, as ES usually self-populates.
+   cp /opt/retropie/configs/all/emulationstation/es_systems.cfg /home/pie/.emulationstation/
 fi
 
 # Ensure the core RetroPie subdirectories exist inside the container volume
-mkdir -p /home/pie/RetroPie/roms
-mkdir -p /home/pie/RetroPie/BIOS
-mkdir -p /home/pie/RetroPie/saves
-mkdir -p /home/pie/RetroPie/states
+#mkdir -p /home/pie/RetroPie/roms
+#mkdir -p /home/pie/RetroPie/BIOS
+#mkdir -p /home/pie/RetroPie/saves
+#mkdir -p /home/pie/RetroPie/states
 
 echo "Starting EmulationStation..."
 # Use tini to handle signals and prevent zombie processes
