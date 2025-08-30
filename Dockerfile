@@ -73,6 +73,9 @@ WORKDIR /home/pie
 # Clone the RetroPie-Setup repository
 RUN git clone --depth=1 https://github.com/RetroPie/RetroPie-Setup.git
 
+# This should be STEP 11
+RUN sed -i 's/function is_chroot() {/function is_chroot() { return 1; /g' RetroPie-Setup/scriptmodules/system.sh
+
 # Change to the RetroPie-Setup directory and run the setup script
 WORKDIR /home/pie/RetroPie-Setup
 # Manually install the core and main dependencies non-interactively
