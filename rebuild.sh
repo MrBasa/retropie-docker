@@ -8,7 +8,7 @@ IMAGE_NAME="retropie"
 echo "Performing full cleanup..."
 if podman ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "Stopping and removing existing containers and volumes..."
-    #podman-compose down -v
+    # podman-compose down -v
     podman stop "$CONTAINER_NAME" >/dev/null 2>&1
     podman rm "$CONTAINER_NAME" >/dev/null 2>&1
     echo "$CONTAINER_NAME Removed!"

@@ -2,18 +2,16 @@ version: '3.8'
 
 services:
   retropie:
-    image: retropie
     build: .
+    image: retropie
     container_name: retropie
-
-    #x-podman:
-    #    in-pod: false
-
-    deploy:
-      replicas: 1
+    user: pie
 
     # Enables rootless containers with proper user mapping for file permissions
-    #userns_mode: "keep-id"
+    # This currently is not working due to Podman bug.
+    # Must use "podman-compose --pod-args '--userns keep-id'" instead
+    # userns_mode: "keep-id"
+
     # Loads environment variables from the .env file (for D-Bus)
     env_file:
       - .env
@@ -22,21 +20,20 @@ services:
     cpu_shares: 2048
 
     # Binds the container's network directly to the host for NetPlay/streaming
-    network_mode: "host"
-
-    # Needed?
-    #privileged: true
+    network_mode: host
 
     # Provides direct access to hardware for display and controllers
     devices:
       - "/dev/dri:/dev/dri"
       - "/dev/input:/dev/input"
+      #- /dev/snd
+      #- /dev/input
 
     environment:
       - DISPLAY=${DISPLAY}
       - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
 
-    volumes:
+    #volumes:
       # Display & Hardware Mounts
       #- /tmp/.X11-unix:/tmp/.X11-unix:Z
       #- /dev/input:/dev/input
@@ -44,11 +41,17 @@ services:
       #- ${XAUTHORITY}:/home/pie/.Xauthority:Z
       
       # Data Persistence Mounts
-      - ./retropie-data/configs:/home/pie/.emulationstation:Z
-      - ./retropie-data/configs-all:/opt/retropie/configs:Z
-      - ./retropie-data/roms:/home/pie/RetroPie/roms:Z
-      - ./retropie-data/bios:/home/pie/RetroPie/BIOS:Z
-      - ./retropie-data/saves:/home/pie/RetroPie/saves:Z
-      - ./retropie-data/states:/home/pie/RetroPie/states:Z
+      ###- /home/mrbasa/RetroPie/es-configs:/home/pie/.emulationstation:Z
+      #- /home/mrbasa/RetroPie/configs:/opt/retropie/configs:Z
+      #- /home/mrbasa/RetroPie/roms:/home/pie/roms:Z
+      #- /home/mrbasa/RetroPie/bios:/home/pie/RetroPie/BIOS:Z
+
+      # These will require special handling. ES needs to be configured to use this directories.
+      #- /home/mrbasa/RetroPie/saves:/home/pie/RetroPie/saves:Z
+      #- /home/mrbasa/RetroPie/states:/home/pie/RetroPie/states:Z
 
     restart: unless-stopped
+
+    # For debugging. This line overrides the Dockerfile's ENTRYPOINT.
+    # The container will start and do nothing indefinitely.
+    entrypoint: tail -f /dev/null
