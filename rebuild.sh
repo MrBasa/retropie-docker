@@ -19,7 +19,8 @@ if podman image exists "$IMAGE_NAME"; then
     echo "$IMAGE_NAME Removed!"
 fi
 
-# --- Step 2: Build ---
+# --- Step 2: Build & Deploy ---
 echo "Starting fresh build and deploying..."
-podman build --security-opt seccomp=unconfined -t retropie .
-podman-compose --pod-args '--userns keep-id' up -d --build
+# Build the image ONCE with the necessary security option.
+#podman build --no-cache --security-opt seccomp=unconfined -t "$IMAGE_NAME" .
+podman-compose --pod-args '--userns keep-id' up -d --build --no-cache | tee build.log
