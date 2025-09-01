@@ -9,7 +9,7 @@ echo "Entrypoint starting..."
 # Check if /opt/retropie/configs is empty and copy defaults if it is.
 if [ -z "$(ls -A /opt/retropie/configs)" ]; then
    echo "INFO: /opt/retropie/configs is empty. Bootstrapping default configs..."
-   echo "I wuz here" > /opt/retropie/configs.bak/hi.txt
+   echo "Bootstrapped on $(date)" > /opt/retropie/configs.bak/bootstrap.log
    cp -a /opt/retropie/configs.bak/. /opt/retropie/configs/
    # sudo $RETROPIE_SETUP/retropie_packages.sh emulationstation clear_input
 fi

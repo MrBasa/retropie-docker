@@ -9,8 +9,7 @@ ARG UNAME=pie
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TERM=xterm
 
-RUN echo "Name: " $UNAME
-RUN echo "PUID: " $PUID
+RUN echo "UNAME: $UNAME - PUID: $PUID - PGID: $PGID"
 
 # Install all build-time dependencies
 RUN apt-get update && \
@@ -19,8 +18,12 @@ RUN apt-get update && \
         ca-certificates \
         cmake \
         curl \
+        dialog \
+        feh \
         git \
         gnupg \
+        iproute2 \
+        iputils-ping \
         libasound2-dev \
         libbluetooth-dev \
         libdbus-1-dev \
@@ -30,11 +33,16 @@ RUN apt-get update && \
         libsdl2-mixer-dev \
         libudev-dev \
         lsb-release \
+        mc \
+        p7zip \
         pkg-config \
         python3-dev \
+        python3-pyudev \
         sudo \
         subversion \
-        wget && \
+        unzip \
+        wget \
+        xmlstarlet && \
     rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user and group with the provided IDs and name for the build process
@@ -50,6 +58,7 @@ WORKDIR /home/${UNAME}
 RUN git clone --depth=1 https://github.com/RetroPie/RetroPie-Setup.git
 WORKDIR /home/${UNAME}/RetroPie-Setup
 RUN sudo ./retropie_packages.sh setup basic_install
+RUN echo "Path: $PATH"
 
 # --- Stage 2: The Final Image ---
 # This stage creates the slim, final container
@@ -75,6 +84,9 @@ RUN apt-get update && \
         feh \
         iproute2 \
         joystick \
+        libgl1 \
+        libfreeimage3 \
+        libvlc5 \
         p7zip \
         python3-pyudev \
         sudo \
@@ -87,7 +99,8 @@ RUN apt-get update && \
 # Create the same non-root user and group as in the builder
 RUN groupadd -g ${PGID} ${UNAME} && \
     useradd -u ${PUID} -g ${PGID} -m -s /bin/bash ${UNAME} && \
-    usermod -a -G adm,audio,sudo,users,video,input,plugdev,bluetooth ${UNAME}
+    usermod -a -G adm,audio,sudo,users,video,input,plugdev,bluetooth ${UNAME} && \
+    echo "${UNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${UNAME}
 
 # Copy the installed RetroPie files from the builder stage
 COPY --from=builder /home/${UNAME} /home/${UNAME}
@@ -101,6 +114,10 @@ RUN cp -a /opt/retropie/configs /opt/retropie/configs.bak
 # Copy the entrypoint script into the container and make it executable.
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Switch to the non-root user
+USER ${UNAME}
+WORKDIR /home/${UNAME}
 
 # Set the entrypoint to our custom script.
 # ENTRYPOINT ["/usr/bin/tini", "--", "/home/pie/entrypoint.sh"]

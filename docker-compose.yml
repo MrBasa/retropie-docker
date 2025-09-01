@@ -5,11 +5,11 @@ services:
     build:
       context: .
       args:
-        - UNAME: ${UNAME:?User name required}
-        - PUID: ${PUID:?User ID required}
-        - PGID: ${PGID:?Group ID required}
-        - IMAGE_NAME: ${IMAGE_NAME:?Image name required}
-        - CONTAINER_NAME: ${CONTAINER_NAME:?Container name required}
+        UNAME: ${UNAME:?User name required}
+        PUID: ${PUID:?User ID required}
+        PGID: ${PGID:?Group ID required}
+        IMAGE_NAME: ${IMAGE_NAME:?Image name required}
+        CONTAINER_NAME: ${CONTAINER_NAME:?Container name required}
         #- FOO: ${FOO:?FOO required}
     image: ${IMAGE_NAME}
     container_name: ${CONTAINER_NAME}
@@ -21,7 +21,7 @@ services:
     # Must use "podman-compose --pod-args '--userns keep-id'" instead
     # userns_mode: "keep-id"
 
-    # Loads environment variables from the .env file (for D-Bus)
+    # Loads environment variables from the .env file
     env_file:
       - .env
     
@@ -53,6 +53,6 @@ services:
       - ${STATES_DIR}:/home/pie/RetroPie/states:Z
 
 
-    # For debugging. This line overrides the Dockerfile's ENTRYPOINT.
+    # For debugging container. This line overrides the Dockerfile's ENTRYPOINT.
     # The container will start and do nothing indefinitely.
-    #entrypoint: tail -f /dev/null
+    entrypoint: tail -f /dev/null
