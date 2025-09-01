@@ -2,10 +2,16 @@ version: '3.8'
 
 services:
   retropie:
-    build: .
-    image: retropie
-    container_name: retropie
-    user: pie
+    build:
+      context: .
+      args:
+        - UNAME: ${UNAME}
+        - PUID: ${PUID}
+        - PGID: ${PGID}
+    image: ${IMAGE_NAME}
+    container_name: ${CONTAINER_NAME}
+    user: "${PUID}:${PGID}"
+    restart: unless-stopped
 
     # Enables rootless containers with proper user mapping for file permissions
     # This currently is not working due to Podman bug.
@@ -24,32 +30,25 @@ services:
 
     # Provides direct access to hardware for display and controllers
     devices:
-      - "/dev/dri:/dev/dri"
-      - "/dev/input:/dev/input"
-      #- /dev/snd
-      #- /dev/input
+      - /dev/bus/usb
+      - /dev/dri
+      - /dev/input
+      - /dev/snd
 
     environment:
       - DISPLAY=${DISPLAY}
-      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+      - TZ=${TZ}
+      #- XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
 
     volumes:
-      # Display & Hardware Mounts
-      #- /tmp/.X11-unix:/tmp/.X11-unix:Z
-      #- /dev/input:/dev/input
-      #- /dev/dri:/dev/dri:Z
-      #- ${XAUTHORITY}:/home/pie/.Xauthority:Z
-      
       # Data Persistence Mounts
-      - /home/mrbasa/RetroPie/configs:/opt/retropie/configs:Z
-      - /home/mrbasa/RetroPie/roms:/home/pie/RetroPie/roms:Z
-      - /home/mrbasa/RetroPie/bios:/home/pie/RetroPie/BIOS:Z
-
+      - ${CONFIG_DIR}:/opt/retropie/configs
+      - ${ROMS_DIR}:/home/${UNAME}/RetroPie/roms
+      - ${BIOS_DIR}:/home/${UNAME}/RetroPie/BIOS
       # These will require special handling. ES needs to be configured to use these directories.
-      #- /home/mrbasa/RetroPie/saves:/home/pie/RetroPie/saves:Z
-      #- /home/mrbasa/RetroPie/states:/home/pie/RetroPie/states:Z
+      - ${SAVES_DIR}:/home/pie/RetroPie/saves:Z
+      - ${STATES_DIR}:/home/pie/RetroPie/states:Z
 
-    restart: unless-stopped
 
     # For debugging. This line overrides the Dockerfile's ENTRYPOINT.
     # The container will start and do nothing indefinitely.
