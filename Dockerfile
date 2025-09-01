@@ -1,21 +1,16 @@
+# --- Stage 1: The Builder ---
+FROM debian:bullseye as builder
 # Accept build-time arguments for user/group IDs
 ARG PUID=1000
 ARG PGID=1000
 ARG UNAME=pie
-# --- Stage 1: The Builder ---
-FROM debian:bullseye as builder
 
 # Set environment variables to prevent prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TERM=xterm
 
-RUN echo "Name " $UNAME
-RUN echo $PUID
-
-# Create a non-root user and group with the provided IDs and name for the build process
-RUN groupadd -g ${PGID} ${UNAME} && \
-    useradd -u ${PUID} -g ${PGID} -m -s /bin/bash ${UNAME} && \
-    echo "${UNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${UNAME}
+RUN echo "Name: " $UNAME
+RUN echo "PUID: " $PUID
 
 # Install all build-time dependencies
 RUN apt-get update && \
@@ -42,6 +37,11 @@ RUN apt-get update && \
         wget && \
     rm -rf /var/lib/apt/lists/*
 
+# Create a non-root user and group with the provided IDs and name for the build process
+RUN groupadd -g ${PGID} ${UNAME} && \
+    useradd -u ${PUID} -g ${PGID} -m -s /bin/bash ${UNAME} && \
+    echo "${UNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${UNAME}
+
 # Switch to the non-root user
 USER ${UNAME}
 WORKDIR /home/${UNAME}
@@ -54,6 +54,10 @@ RUN sudo ./retropie_packages.sh setup basic_install
 # --- Stage 2: The Final Image ---
 # This stage creates the slim, final container
 FROM debian:bullseye-slim
+# Accept the same arguments again for the final stage, with defaults
+ARG UNAME=pie
+ARG PUID=1000
+ARG PGID=1000
 
 # Set environment variables again for the final image
 ENV DEBIAN_FRONTEND=noninteractive
@@ -61,11 +65,6 @@ ENV TERM=xterm
 
 # Set the stop signal to allow for a clean shutdown
 STOPSIGNAL SIGINT
-
-# Accept the same arguments again for the final stage, with defaults
-ARG UNAME=pie
-ARG PUID=1000
-ARG PGID=1000
 
 # Install only the essential runtime dependencies
 RUN apt-get update && \
