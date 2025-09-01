@@ -1,14 +1,21 @@
-# --- Stage 1: The Builder ---
-FROM debian:bullseye as builder
-
 # Accept build-time arguments for user/group IDs
 ARG PUID=1000
 ARG PGID=1000
-ARG USER_NAME=pie
+ARG UNAME=pie
+# --- Stage 1: The Builder ---
+FROM debian:bullseye as builder
 
 # Set environment variables to prevent prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TERM=xterm
+
+RUN echo "Name " $UNAME
+RUN echo $PUID
+
+# Create a non-root user and group with the provided IDs and name for the build process
+RUN groupadd -g ${PGID} ${UNAME} && \
+    useradd -u ${PUID} -g ${PGID} -m -s /bin/bash ${UNAME} && \
+    echo "${UNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${UNAME}
 
 # Install all build-time dependencies
 RUN apt-get update && \
@@ -34,11 +41,6 @@ RUN apt-get update && \
         subversion \
         wget && \
     rm -rf /var/lib/apt/lists/*
-
-# Create a non-root user and group with the provided IDs and name for the build process
-RUN groupadd -g ${PGID} ${UNAME} && \
-    useradd -u ${PUID} -g ${PGID} -m -s /bin/bash ${UNAME} && \
-    echo "${UNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${UNAME}
 
 # Switch to the non-root user
 USER ${UNAME}

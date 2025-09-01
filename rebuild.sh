@@ -6,10 +6,17 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-# Source environment variables from .env file
-source .env
+# --- Step 1: Load Environment Variables ---
+echo "Loading configuration from .env file..."
+if [ ! -f .env ]; then
+    echo "Error: .env file not found!"
+    exit 1
+fi
 
-# --- Step 1: Full Cleanup ---
+# Source and export the variables to make them available to podman-compose
+export $(grep -v '^#' .env | xargs)
+
+# --- Step 2: Full Cleanup ---
 echo "Performing full cleanup..."
 
 # Stop and remove the container if it exists

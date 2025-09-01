@@ -5,9 +5,10 @@ services:
     build:
       context: .
       args:
-        - UNAME: ${UNAME}
-        - PUID: ${PUID}
-        - PGID: ${PGID}
+        - UNAME: ${UNAME:?User Name required}
+        - PUID: ${PUID:?User ID required}
+        - PGID: ${PGID:?Group ID required}
+        #- FOO: ${FOO:?FOO required}
     image: ${IMAGE_NAME}
     container_name: ${CONTAINER_NAME}
     user: "${PUID}:${PGID}"
@@ -38,6 +39,7 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
       - TZ=${TZ}
+      - PUID=11
       #- XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
 
     volumes:
