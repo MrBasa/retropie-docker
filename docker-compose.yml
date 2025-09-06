@@ -55,4 +55,4 @@ services:
 
     # For debugging container. This line overrides the Dockerfile's ENTRYPOINT.
     # The container will start and do nothing indefinitely.
-    entrypoint: tail -f /dev/null
+    #entrypoint: tail -f /dev/null
