@@ -10,7 +10,6 @@ services:
         PGID: ${PGID:?Group ID required}
         IMAGE_NAME: ${IMAGE_NAME:?Image name required}
         CONTAINER_NAME: ${CONTAINER_NAME:?Container name required}
-        #- FOO: ${FOO:?FOO required}
     image: ${IMAGE_NAME}
     container_name: ${CONTAINER_NAME}
     user: "${PUID}:${PGID}"
@@ -28,8 +27,14 @@ services:
     # Run at higher priority (default: 1024)
     cpu_shares: 2048
 
-    # Binds the container's network directly to the host for NetPlay/streaming
+    # Use host networking to give the container access to the host's network interfaces, including Bluetooth
     network_mode: host
+
+    # Grant specific capabilities instead of full 'privileged' mode for better security
+    cap_add:
+      - NET_ADMIN  # Allows managing network interfaces
+      - SYS_ADMIN  # Needed for a range of administrative tasks, often required by Bluetooth services
+
 
     # Provides direct access to hardware for display and controllers
     devices:
@@ -41,9 +46,10 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
       - TZ=${TZ}
-      #- XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
 
     volumes:
+      # Mount the D-Bus socket to allow communication with the host's Bluetooth service
+      - /var/run/dbus:/var/run/dbus
       # Data Persistence Mounts
       - ${CONFIG_DIR}:/opt/retropie/configs
       - ${ROMS_DIR}:/home/${UNAME}/RetroPie/roms

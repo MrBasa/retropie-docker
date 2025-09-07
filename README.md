@@ -27,7 +27,7 @@ Follow these steps to get your containerized RetroPie instance up and running.
 ### 1. Clone the Repository
 
 ```bash
-git clone [https://github.com/mrbasa/retropie-docker.git](https://github.com/mrbasa/retropie-docker.git)
+git clone https://github.com/mrbasa/retropie-docker.git
 cd retropie-docker
 ```
 
