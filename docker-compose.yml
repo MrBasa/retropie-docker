@@ -49,8 +49,8 @@ services:
       - ${ROMS_DIR}:/home/${UNAME}/RetroPie/roms
       - ${BIOS_DIR}:/home/${UNAME}/RetroPie/BIOS
       # These will require special handling. ES needs to be configured to use these directories.
-      - ${SAVES_DIR}:/home/pie/RetroPie/saves:Z
-      - ${STATES_DIR}:/home/pie/RetroPie/states:Z
+      - ${SAVES_DIR}:/home/${UNAME}/RetroPie/saves:Z
+      - ${STATES_DIR}:/home/${UNAME}/RetroPie/states:Z
 
 
     # For debugging container. This line overrides the Dockerfile's ENTRYPOINT.

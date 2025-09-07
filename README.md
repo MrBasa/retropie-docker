@@ -3,12 +3,12 @@
 A containerized setup for [RetroPie](https://retropie.org.uk/) that allows you to run the retro gaming platform in an isolated environment using Docker or Podman. This project is designed to be easy to set up and manage, with persistent storage for all your configurations, ROMs, and save files.
 
 **This is still a work-in-progress. I have yet to test controller configuration and Bluetooth, but everything appears to be working.**
-**Auto configuration of the saves and states directories is not implemented yet**
 
 ## Features
 
 * **Isolated Environment:** Runs RetroPie in its own container, keeping your host system clean.
 * **Persistent Data:** Uses volume mounts to store all your important data (configs, ROMs, BIOS, saves) on the host machine.
+* **Automatic Configuration:** If you specify custom save/state directories, the container will automatically configure RetroArch to use them.
 * **Non-Root User:** The container runs as a non-root user for improved security.
 * **Easy Configuration:** All settings are managed through a simple `.env` file.
 * **Automated Setup:** An entrypoint script automatically sets up default configurations on the first run.
@@ -49,7 +49,7 @@ mkdir -p ./states
 
 Customize the example `.env` file to match your system's configuration.
 
-See the **Configuration** section below for a detailed explanation of each variable in the `.env` file. The most important values to check are `PUID` and `PGID`, which should match your user's ID. You can find them by running the `id` command in your terminal.
+See the **Configuration** section below for a detailed explanation of each variable. The most important values to check are `PUID` and `PGID`, which should match your user's ID (`id -u` and `id -g`).
 
 ### 4. Build and Run
 
@@ -77,8 +77,8 @@ All user-configurable settings are located in the `.env` file.
 | `CONFIG_DIR`     | The path on the host for RetroPie's configurations.                                                                                     | `./configs`       |
 | `ROMS_DIR`       | The path on the host for your game ROMs.                                                                                                | `./roms`          |
 | `BIOS_DIR`       | The path on the host for emulator BIOS files.                                                                                           | `./bios`          |
-| `SAVES_DIR`      | The path on the host for in-game save files.                                                                                            | `./saves`         |
-| `STATES_DIR`     | The path on the host for emulator save states.                                                                                          | `./states`        |
+| `SAVES_DIR`      | (Optional) The path on the host for in-game save files. Triggers auto-configuration. Undefined saves to ROM directory.                  | `./saves`         |
+| `STATES_DIR`     | (Optional) The path on the host for emulator save states. Triggers auto-configuration. Undefined saves to ROM directory.                | `./states`        |
 
 ## Data Persistence (Volume Mappings)
 
@@ -100,13 +100,17 @@ The `Dockerfile` uses a multi-stage build to create a clean and efficient final 
 * **Stage 1 (builder):** Installs all the build-time dependencies and runs the RetroPie setup script to compile and install the core components.
 * **Stage 2 (final):** Starts from a slim Debian base image, installs only the necessary runtime dependencies, and copies the compiled RetroPie application files from the builder stage. This results in a smaller and more secure final image.
 
-### Entrypoint Script
+### Entrypoint Script & Automatic Configuration
 
-The `entrypoint.sh` script runs every time the container starts.
-1.  It first checks if the mapped configuration directory (`/opt/retropie/configs`) is empty.
-2.  If it is empty (which happens on the very first run), the script copies a set of default configurations into the directory.
-3.  This "bootstrapping" process ensures that EmulationStation has the necessary files to start up correctly the first time.
-4.  Finally, it launches EmulationStation.
+The `entrypoint.sh` script runs every time the container starts and performs critical setup tasks:
+
+1.  **Bootstrapping:** It first checks if the mapped configuration directory (`/opt/retropie/configs`) is empty. If it is (on the very first run), the script copies a set of default configurations into the directory so that EmulationStation can start correctly.
+2.  **Auto-Configuring Saves/States:** The script then checks if the `SAVES_DIR` or `STATES_DIR` environment variables were passed from the `.env` file.
+    * If `SAVES_DIR` is set, it automatically edits the master RetroArch config file (`/opt/retropie/configs/all/retroarch.cfg`) to set the `savefile_directory`.
+    * If `STATES_DIR` is set, it does the same for the `savestate_directory`.
+    * If either directory is not set, they will maintain their default behavior of placing the save/state in the ROM directory.
+    * This makes your custom host directories the default for all libretro emulators, so you don't have to configure them manually.
+3.  **Launch:** Finally, it launches EmulationStation.
 
 ## License
 

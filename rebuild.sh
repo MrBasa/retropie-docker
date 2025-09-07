@@ -54,6 +54,6 @@ podman image prune -f
 # --- Step 2: Build & Deploy ---
 echo "▶️ Starting fresh build and deploying..."
 # Build the image ONCE with the necessary security option.
-podman-compose --pod-args '--userns keep-id' up --build -d --no-cache | tee build.log
+podman-compose --pod-args '--userns keep-id' up --build -d | tee build.log
 
 echo "✅ Script completed successfully!"
