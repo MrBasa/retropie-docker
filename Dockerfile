@@ -12,7 +12,9 @@ ENV TERM=xterm
 RUN echo "UNAME: $UNAME - PUID: $PUID - PGID: $PGID"
 
 # Install all build-time dependencies
-RUN apt-get update && \
+# Configure apt to retry downloads up to 3 times to make the build more resilient to network issues
+RUN echo 'APT::Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
@@ -30,10 +32,10 @@ RUN apt-get update && \
         libevdev-dev \
         libsdl2-dev \
         libsdl2-image-dev \
-        libsdl2-mixer-dev \
         libudev-dev \
         lsb-release \
         mc \
+        mesa-utils \
         p7zip \
         pkg-config \
         python3-dev \
@@ -57,9 +59,9 @@ WORKDIR /home/${UNAME}
 # Clone the RetroPie-Setup repository and run the installation
 RUN git clone --depth=1 https://github.com/RetroPie/RetroPie-Setup.git
 WORKDIR /home/${UNAME}/RetroPie-Setup
-RUN sudo ./retropie_packages.sh setup basic_install
-RUN echo "Path: $PATH"
-RUN echo "Environment Vars: $(printenv)"
+RUN sudo ./retropie_packages.sh setup basic_install && \
+    echo "Path: $PATH" && \
+    echo "Environment Vars: $(printenv)"
 
 # --- Stage 2: The Final Image ---
 # This stage creates the slim, final container
@@ -77,25 +79,46 @@ ENV TERM=xterm
 STOPSIGNAL SIGINT
 
 # Install only the essential runtime dependencies
-RUN apt-get update && \
+RUN echo 'APT::Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
         bluetooth \
         bluez \
         dbus-daemon \
+        dbus-x11 \
         feh \
+        gamemode \
         iproute2 \
         joystick \
-        libgl1 \
+        libavcodec58 \
+        libavformat58 \
+        libegl1-mesa \
         libfreeimage3 \
+        libgamemode0 \
+        libgl1 \
+        libswscale5 \
         libvlc5 \
+        mesa-utils \
         p7zip \
         python3-pyudev \
         sudo \
         tini \
         unzip \
         xdg-utils \
+        xterm \
         xmlstarlet && \
     rm -rf /var/lib/apt/lists/*
+
+# Adds the container's own hostname to /etc/hosts to prevent "unable to resolve host" errors with sudo.
+RUN echo "127.0.0.1       $(hostname)" >> /etc/hosts
+
+# Copy the custom emulator config that uses xterm
+COPY emulators.cfg /opt/retropie/configs/all/emulators.cfg
+
+    #mesa-va-drivers \
+    #mesa-vdpau-drivers \
+    #mesa-vulkan-drivers \
+    # xterm
 
 # Create the same non-root user and group as in the builder
 RUN groupadd -g ${PGID} ${UNAME} && \

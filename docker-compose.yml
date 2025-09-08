@@ -22,7 +22,7 @@ services:
 
     # Loads environment variables from the .env file
     env_file:
-      - .env
+      - default.env
     
     # Run at higher priority (default: 1024)
     cpu_shares: 2048
@@ -35,17 +35,19 @@ services:
       - NET_ADMIN  # Allows managing network interfaces
       - SYS_ADMIN  # Needed for a range of administrative tasks, often required by Bluetooth services
 
-
     # Provides direct access to hardware for display and controllers
     devices:
       - /dev/bus/usb
       - /dev/dri
       - /dev/input
       - /dev/snd
+      - /dev/vga_arbiter
 
     environment:
       - DISPLAY=${DISPLAY}
       - TZ=${TZ}
+      #- LIBGL_DRI3_ENABLE=1
+      #- DRI_PRIME=1
 
     volumes:
       # Mount the D-Bus socket to allow communication with the host's Bluetooth service
@@ -57,6 +59,8 @@ services:
       # These will require special handling. ES needs to be configured to use these directories.
       - ${SAVES_DIR}:/home/${UNAME}/RetroPie/saves:Z
       - ${STATES_DIR}:/home/${UNAME}/RetroPie/states:Z
+      # Share the X11 Socket
+      #- /tmp/.X11-unix:/tmp/.X11-unix:ro
 
 
     # For debugging container. This line overrides the Dockerfile's ENTRYPOINT.

@@ -2,10 +2,25 @@
 
 echo "Entrypoint starting..."
 
+# Create a directory for runtime files, sockets, etc.
+export XDG_RUNTIME_DIR="/tmp/xdg-runtime-$(id -u)"
+mkdir -p "$XDG_RUNTIME_DIR"
+chmod u=rwx,g=,o= "$XDG_RUNTIME_DIR"
+
+# Add RetroPie's script directories to the PATH
+export PATH="/opt/retropie/supplementary:/opt/retropie/bin:$PATH"
+
 # Define the path to the main RetroArch config file
 RETROARCH_CONFIG="/opt/retropie/configs/all/retroarch.cfg"
 
-# --- Bootstrap Logic ---
+# --- Fix sudo "unable to resolve host" error ---
+# This runs at startup to ensure the container's current hostname is in /etc/hosts.
+if ! grep -q "$(hostname)" /etc/hosts; then
+  echo "INFO: Adding $(hostname) to /etc/hosts for sudo..."
+  echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts > /dev/null
+fi
+
+# --- Bootstrap Configs ---
 # Check if /opt/retropie/configs is empty and copy defaults if it is.
 if [ -z "$(ls -A /opt/retropie/configs)" ]; then
    echo "INFO: /opt/retropie/configs is empty. Bootstrapping default configs..."
@@ -13,7 +28,7 @@ if [ -z "$(ls -A /opt/retropie/configs)" ]; then
    echo "Bootstrapped on $(date)" > /opt/retropie/configs/bootstrap.log
 fi
 
-# --- NEW: Custom Save/State Directory Logic ---
+# --- Custom Save/State Directory Logic ---
 # This block checks for the existence of the variables from the .env file and
 # updates the main retroarch.cfg to point to the correct directories inside the container.
 if [ -f "$RETROARCH_CONFIG" ]; then
@@ -46,5 +61,9 @@ fi
 
 echo "Starting EmulationStation..."
 echo "Running as $(whoami)"
+
+# Start a D-Bus session and export its variables into the current script's environment.
+#eval $(dbus-launch --sh-syntax)
+
 # Use tini to handle signals and prevent zombie processes
 exec /usr/bin/tini -g -- emulationstation
